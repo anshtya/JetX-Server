@@ -17,11 +17,16 @@ ksp {
     arg("KOIN_DEFAULT_MODULE","false")
 }
 
+ktor {
+    docker {
+        localImageName = "ktor-docker-image"
+    }
+}
+
 dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
-    implementation(libs.h2)
     implementation(libs.koin.annotations)
     ksp(libs.koin.ksp.compiler)
     implementation(libs.koin.ktor)

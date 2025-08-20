@@ -1,10 +1,12 @@
 package com.anshtya.jetx.server.profile
 
+import com.anshtya.jetx.server.response.ServerResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
 
 fun Application.profileRoutes() {
@@ -16,9 +18,16 @@ fun Application.profileRoutes() {
                 try {
                     val profile = call.receive<Profile>()
                     profileRepository.createProfile(profile)
-                    call.respond(HttpStatusCode.Created)
+                    call.respond(
+                        ServerResponse(HttpStatusCode.Created.value, "Profile created successfully")
+                    )
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError)
+                    log.error("${call.route} - ${e.message}")
+                    call.respond(
+                        ServerResponse(HttpStatusCode.InternalServerError.value, "Something went wrong")
+                    )
                 }
             }
 
@@ -29,12 +38,23 @@ fun Application.profileRoutes() {
 
                     val profile = profileRepository.getProfile(username)
                     profile?.let {
-                        call.respond(HttpStatusCode.OK, profile)
-                    } ?: call.respond(HttpStatusCode.NotFound)
+                        call.respond(
+                            ServerResponse(HttpStatusCode.OK.value, profile)
+                        )
+                    } ?: call.respond(
+                        ServerResponse(HttpStatusCode.NotFound.value, HttpStatusCode.NotFound.description)
+                    )
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid username")
+                    call.respond(
+                        ServerResponse(HttpStatusCode.BadRequest.value, e.message ?: "Invalid username")
+                    )
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError)
+                    log.error("${call.route} - ${e.message}")
+                    call.respond(
+                        ServerResponse(HttpStatusCode.InternalServerError.value, "Something went wrong")
+                    )
                 }
             }
         }

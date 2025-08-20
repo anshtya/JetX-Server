@@ -1,7 +1,9 @@
 package com.anshtya.jetx.server.profile
 
 import com.anshtya.jetx.server.database.entity.ProfileEntity
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Profile(
     val username: String,
     val name: String,
