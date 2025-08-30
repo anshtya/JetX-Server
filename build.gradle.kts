@@ -1,44 +1,48 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.ktor)
+	kotlin("jvm") version "2.2.0"
+	kotlin("plugin.spring") version "2.2.0"
+	id("org.springframework.boot") version "3.5.5"
+	id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "com.anshtya.jetx.server"
-version = "0.0.1"
+group = "com.anshtya.jetx"
+version = "0.0.1-SNAPSHOT"
+description = "Server for JetX"
 
-application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 }
 
-ksp {
-    arg("KOIN_CONFIG_CHECK","true")
-    arg("KOIN_DEFAULT_MODULE","false")
-}
-
-ktor {
-    docker {
-        localImageName = "ktor-docker-image"
-    }
+repositories {
+	mavenCentral()
 }
 
 dependencies {
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
-    implementation(libs.exposed.jdbc)
-    implementation(libs.koin.annotations)
-    ksp(libs.koin.ksp.compiler)
-    implementation(libs.koin.ktor)
-    implementation(libs.koin.logger.slf4j)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.server.config.yaml)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
-    implementation(libs.postgresql)
+	implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.kotlin.test.junit)
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    implementation("io.jsonwebtoken:jjwt-api:0.12.3")
+    implementation("io.jsonwebtoken:jjwt-impl:0.12.3")
+    implementation("io.jsonwebtoken:jjwt-jackson:0.12.3")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+kotlin {
+	compilerOptions {
+		freeCompilerArgs.addAll("-Xjsr305=strict")
+	}
+}
+
+tasks.withType<Test> {
+	useJUnitPlatform()
 }
