@@ -28,9 +28,13 @@ dependencies {
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    implementation("io.appwrite:sdk-for-kotlin:9.0.0")
+
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     implementation("io.jsonwebtoken:jjwt-impl:0.12.3")
     implementation("io.jsonwebtoken:jjwt-jackson:0.12.3")
+
+    runtimeOnly("org.postgresql:postgresql:42.7.7")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

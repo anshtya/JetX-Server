@@ -1,6 +1,5 @@
 package com.anshtya.jetx.server.config
 
-import com.anshtya.jetx.server.security.JwtAuthenticationEntryPoint
 import com.anshtya.jetx.server.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,10 +19,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
@@ -33,12 +30,9 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/api/auth/**").permitAll()
-//                    .requestMatchers("/api/attachments/download/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/actuator/health").permitAll()
                     .anyRequest().authenticated()
             }
-            .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }

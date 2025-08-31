@@ -11,13 +11,13 @@ import javax.crypto.SecretKey
 
 @Component
 class JwtUtil(
-    @param:Value($$"${app.jwt.secret}")
+    @param:Value($$"${jwt.secret}")
     private val jwtSecret: String,
 
-    @param:Value($$"${app.jwt.access-token-expiration}")
+    @param:Value($$"${jwt.access-token-expiration}")
     private val accessTokenExpiration: Long,
 
-    @param:Value($$"${app.jwt.refresh-token-expiration}")
+    @param:Value($$"${jwt.refresh-token-expiration}")
     private val refreshTokenExpiration: Long
 ) {
 
@@ -31,7 +31,10 @@ class JwtUtil(
         return createToken(mapOf("userId" to userId), refreshTokenExpiration)
     }
 
-    private fun createToken(claims: Map<String, Any>, expiration: Long): String {
+    private fun createToken(
+        claims: Map<String, Any>,
+        expiration: Long
+    ): String {
         val now = Date()
         val expiryDate = Date(now.time + expiration)
 
@@ -39,7 +42,6 @@ class JwtUtil(
             .claims(claims)
             .issuedAt(now)
             .expiration(expiryDate)
-//            .signWith(key, SignatureAlgorithm.HS512)
             .signWith(key)
             .compact()
     }

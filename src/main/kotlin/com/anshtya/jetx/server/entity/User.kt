@@ -43,4 +43,6 @@ data class User(
     @UpdateTimestamp
     @Column(nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now()
-)
+) {
+    private constructor(): this(phoneNumber = "", pinHash = "", username = "", displayName = "")
+}
