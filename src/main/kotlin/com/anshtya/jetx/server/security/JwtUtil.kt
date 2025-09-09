@@ -2,8 +2,8 @@ package com.anshtya.jetx.server.security
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
@@ -20,49 +20,40 @@ class JwtUtil(
     @param:Value($$"${jwt.refresh-token-expiration}")
     private val refreshTokenExpiration: Long
 ) {
+    private val key: SecretKey = Keys.hmacShaKeyFor(jwtSecret.toByteArray())
 
-    private val key: SecretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret))
-
-    fun generateAccessToken(userId: Long, username: String): String {
-        return createToken(mapOf("userId" to userId, "username" to username), accessTokenExpiration)
+    fun getToken(request: HttpServletRequest): String {
+        return request.getHeader("Authorization").substringAfter("Bearer ")
     }
 
-    fun generateRefreshToken(userId: Long): String {
-        return createToken(mapOf("userId" to userId), refreshTokenExpiration)
+    fun generateAccessToken(phoneNumber: String, userId: UUID): String {
+        return createToken(phoneNumber, userId, accessTokenExpiration)
+    }
+
+    fun generateRefreshToken(phoneNumber: String, userId: UUID): String {
+        return createToken(phoneNumber, userId, refreshTokenExpiration)
     }
 
     private fun createToken(
-        claims: Map<String, Any>,
+        phoneNumber: String,
+        userId: UUID,
         expiration: Long
     ): String {
         val now = Date()
         val expiryDate = Date(now.time + expiration)
 
         return Jwts.builder()
-            .claims(claims)
+            .subject(phoneNumber)
+            .claim("userId", userId)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(key)
             .compact()
     }
 
-    fun validateToken(token: String): Boolean {
-        return try {
-            Jwts.parser().verifyWith(key).build().parseSignedClaims(token)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    fun getUserIdFromToken(token: String): Long {
-        val claims = getClaimsFromToken(token)
-        return claims["userId"].toString().toLong()
-    }
-
-    fun getUsernameFromToken(token: String): String {
-        val claims = getClaimsFromToken(token)
-        return claims["username"].toString()
+    fun getUserIdFromToken(token: String): UUID {
+        val userId = getClaimsFromToken(token)["userId"] as String
+        return UUID.fromString(userId)
     }
 
     private fun getClaimsFromToken(token: String): Claims {

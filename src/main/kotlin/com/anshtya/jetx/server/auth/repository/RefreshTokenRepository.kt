@@ -1,11 +1,11 @@
-package com.anshtya.jetx.server.repository
+package com.anshtya.jetx.server.auth.repository
 
-import com.anshtya.jetx.server.entity.RefreshToken
+import com.anshtya.jetx.server.auth.entity.RefreshToken
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
+import java.util.*
 
 @Repository
 interface RefreshTokenRepository : JpaRepository<RefreshToken, Long> {
@@ -13,9 +13,5 @@ interface RefreshTokenRepository : JpaRepository<RefreshToken, Long> {
 
     @Modifying
     @Query("DELETE FROM RefreshToken rt WHERE rt.user.id = :userId")
-    fun deleteByUserId(userId: Long)
-
-    @Modifying
-    @Query("DELETE FROM RefreshToken rt WHERE rt.expiryDate < :now")
-    fun deleteExpiredTokens(now: LocalDateTime)
+    fun deleteByUserId(userId: UUID)
 }
