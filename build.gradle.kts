@@ -29,7 +29,7 @@ dependencies {
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    implementation("io.appwrite:sdk-for-kotlin:9.0.0")
+    implementation("software.amazon.awssdk:s3:2.20.26")
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     implementation("io.jsonwebtoken:jjwt-impl:0.12.3")

@@ -56,6 +56,11 @@ class JwtUtil(
         return UUID.fromString(userId)
     }
 
+    fun getUserIdFromRequest(request: HttpServletRequest): UUID {
+        val token = getToken(request)
+        return getUserIdFromToken(token)
+    }
+
     private fun getClaimsFromToken(token: String): Claims {
         return Jwts.parser()
             .verifyWith(key)

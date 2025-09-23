@@ -9,7 +9,7 @@ import java.util.*
 
 @Entity
 @Table(name = "user_profile")
-class UserProfile(
+data class UserProfile(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
@@ -25,7 +25,10 @@ class UserProfile(
     var displayName: String,
 
     @Column
-    var profilePhotoUrl: String? = null,
+    var profilePhotoUrl: String? = null,  // TODO: generate url
+
+    @Column
+    var profilePhotoKey: String? = null,
 
     @Column
     var fcmToken: String? = null,

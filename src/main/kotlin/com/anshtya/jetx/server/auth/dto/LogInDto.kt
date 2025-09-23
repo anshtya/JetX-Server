@@ -16,6 +16,6 @@ data class LogInDto(
     @field:Pattern(regexp = PIN_REGEX, message = "PIN must contain only digits")
     val pin: String,
 
-//    @field:NotBlank(message = "FCM token is required")
-    val fcmToken: String? // TODO: null for now, until client is integrated
+    @field:NotBlank(message = "FCM token is required")
+    val fcmToken: String
 )

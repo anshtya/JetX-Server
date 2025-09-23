@@ -46,7 +46,7 @@ class AuthService(
             throw BadCredentialsException("Invalid credentials")
         }
 
-//        userProfileRepository.updateFcmToken(user.id!!, request.fcmToken)
+        userProfileRepository.updateFcmToken(user.id!!, request.fcmToken)
 
         return generateAuthResponse(user)
     }
