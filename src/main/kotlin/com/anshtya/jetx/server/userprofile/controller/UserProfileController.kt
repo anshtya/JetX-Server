@@ -23,15 +23,31 @@ class UserProfileController(
         return ResponseEntity.ok(user)
     }
 
+    @PostMapping("/get")
+    fun getUserProfile(
+        @RequestBody getProfileRequestDto: GetProfileRequestDto
+    ): ResponseEntity<UserProfileDto> {
+        val user = userProfileService.getUserProfileById(getProfileRequestDto)
+        return ResponseEntity.ok(user)
+    }
+
     @PostMapping("/create")
     fun createUserProfile(
         request: HttpServletRequest,
-        @Valid @RequestPart createProfileDto: CreateProfileDto,
-        @RequestPart("file") profilePhoto: MultipartFile?
+        @Valid @RequestPart("data") createProfileDto: CreateProfileDto,
+        @RequestPart("photo") profilePhoto: MultipartFile?
     ): ResponseEntity<Unit> {
         val userId = jwtUtil.getUserIdFromRequest(request)
         userProfileService.createUserProfile(userId, createProfileDto, profilePhoto)
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/check_username")
+    fun checkUsername(
+        @Valid @RequestBody checkUsernameDto: CheckUsernameDto
+    ): ResponseEntity<CheckUsernameResponseDto> {
+        val response = userProfileService.checkUsername(checkUsernameDto)
+        return ResponseEntity.ok(response)
     }
 
     @PatchMapping("/update")

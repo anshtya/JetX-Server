@@ -25,6 +25,13 @@ class UserProfileService(
             ?: throw NotFoundException("User not found")
     }
 
+    fun getUserProfileById(
+        getProfileRequestDto: GetProfileRequestDto
+    ): UserProfileDto {
+        return userProfileRepository.findByUserId(UUID.fromString(getProfileRequestDto.userId))?.toDto()
+            ?: throw NotFoundException("User not found")
+    }
+
     fun createUserProfile(
         userId: UUID,
         createProfileDto: CreateProfileDto,
@@ -34,25 +41,37 @@ class UserProfileService(
             IllegalStateException("User doesn't exist")
         }
 
-        // Check if username is already taken by another user
-        val userProfileExists = userProfileRepository.findByUsername(createProfileDto.username) != null
-        if (userProfileExists) {
-            throw IllegalStateException("User profile already exists")
-        }
-
-        var profilePhotoFileName: String? = null
-        if (profilePhoto != null && !profilePhoto.isEmpty) {
-            profilePhotoFileName = uploadProfilePhoto(profilePhoto, createProfileDto.username)
-        }
+        // TODO: implement profile storage
+//        var profilePhotoFileName: String? = null
+//        if (profilePhoto != null && !profilePhoto.isEmpty) {
+//            profilePhotoFileName = uploadProfilePhoto(profilePhoto, createProfileDto.username)
+//        }
 
         val userProfile = UserProfile(
             username = createProfileDto.username,
             user = user,
             displayName = createProfileDto.displayName,
-            profilePhotoKey = profilePhotoFileName,
+            profilePhotoKey = null,
             fcmToken = createProfileDto.fcmToken
         )
         userProfileRepository.save(userProfile)
+    }
+
+    fun checkUsername(
+        checkUsernameDto: CheckUsernameDto
+    ): CheckUsernameResponseDto {
+        val userProfileExists = userProfileRepository.findByUsername(checkUsernameDto.username) != null
+        return if (userProfileExists) {
+            CheckUsernameResponseDto(
+                valid = false,
+                message = "User already exists."
+            )
+        } else {
+            CheckUsernameResponseDto(
+                valid = true,
+                message = null
+            )
+        }
     }
 
     fun updateUserProfile(

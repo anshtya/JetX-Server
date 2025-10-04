@@ -18,10 +18,10 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
     fun searchUsers(query: String): List<UserProfile>
 
     @Modifying
-    @Query("UPDATE UserProfile u SET u.isOnline = :status, u.lastSeen = :lastSeen WHERE u.id = :userId")
+    @Query("UPDATE UserProfile u SET u.isOnline = :status, u.lastSeen = :lastSeen WHERE u.user.id = :userId")
     fun updateUserPresence(userId: UUID, status: Boolean, lastSeen: LocalDateTime)
 
     @Modifying
-    @Query("UPDATE UserProfile u SET u.fcmToken = :token WHERE u.id = :userId")
+    @Query("UPDATE UserProfile u SET u.fcmToken = :token WHERE u.user.id = :userId")
     fun updateFcmToken(userId: UUID, token: String)
 }

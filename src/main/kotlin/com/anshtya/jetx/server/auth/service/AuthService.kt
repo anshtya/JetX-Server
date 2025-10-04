@@ -81,6 +81,7 @@ class AuthService(
         refreshTokenRepository.save(refreshToken)
 
         return AuthResultDto(
+            userId = authUser.id,
             accessToken = accessToken,
             refreshToken = refreshTokenString
         )
