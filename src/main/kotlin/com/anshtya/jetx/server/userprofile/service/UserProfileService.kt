@@ -2,7 +2,6 @@ package com.anshtya.jetx.server.userprofile.service
 
 import com.anshtya.jetx.server.auth.repository.AuthUserRepository
 import com.anshtya.jetx.server.exception.NotFoundException
-import com.anshtya.jetx.server.exception.UsernameAlreadyExistsException
 import com.anshtya.jetx.server.storage.service.FileStorageService
 import com.anshtya.jetx.server.userprofile.dto.*
 import com.anshtya.jetx.server.userprofile.entity.UserProfile
@@ -28,7 +27,11 @@ class UserProfileService(
     fun getUserProfileById(
         getProfileRequestDto: GetProfileRequestDto
     ): UserProfileDto {
-        return userProfileRepository.findByUserId(UUID.fromString(getProfileRequestDto.userId))?.toDto()
+        val userId = UUID.fromString(getProfileRequestDto.userId)
+        val phoneNumber = authUserRepository.findById(userId).orElseThrow {
+            IllegalStateException("User doesn't exist")
+        }.phoneNumber
+        return userProfileRepository.findByUserId(userId)?.toDto(phoneNumber)
             ?: throw NotFoundException("User not found")
     }
 
@@ -36,7 +39,7 @@ class UserProfileService(
         userId: UUID,
         createProfileDto: CreateProfileDto,
         profilePhoto: MultipartFile?
-    ) {
+    ): UserProfileDto {
         val user = authUserRepository.findById(userId).orElseThrow {
             IllegalStateException("User doesn't exist")
         }
@@ -55,12 +58,14 @@ class UserProfileService(
             fcmToken = createProfileDto.fcmToken
         )
         userProfileRepository.save(userProfile)
+
+        return userProfileRepository.findByUserId(userId)!!.toDto(user.phoneNumber)
     }
 
     fun checkUsername(
-        checkUsernameDto: CheckUsernameDto
+        usernameDto: UsernameDto
     ): CheckUsernameResponseDto {
-        val userProfileExists = userProfileRepository.findByUsername(checkUsernameDto.username) != null
+        val userProfileExists = userProfileRepository.findByUsername(usernameDto.username) != null
         return if (userProfileExists) {
             CheckUsernameResponseDto(
                 valid = false,
@@ -74,41 +79,18 @@ class UserProfileService(
         }
     }
 
-    fun updateUserProfile(
-        userId: UUID,
-        updateProfileDto: UpdateProfileDto
-    ) {
-        val userProfile = getUserProfile(userId)
-
-        // Check if username is already taken by another user
-        updateProfileDto.username?.let { newUsername ->
-            if (newUsername != userProfile.username && userProfileRepository.existsByUsername(newUsername)) {
-                throw UsernameAlreadyExistsException()
-            }
-        }
-
-        userProfile.apply {
-            updateProfileDto.username?.let { username = it }
-            updateProfileDto.displayName?.let { displayName = it }
-        }
-
-        userProfileRepository.save(userProfile)
-    }
-
     fun updateProfilePhoto(
         userId: UUID,
         profilePhoto: MultipartFile
     ) {
         val existingProfile = getUserProfile(userId)
 
-        existingProfile.profilePhotoKey?.let { key ->
-            storageService.deleteFile(key)
-        }
-
-        val newPhotoFileName = uploadProfilePhoto(profilePhoto, existingProfile.username)
+//        existingProfile.profilePhotoKey?.let { key ->
+//            storageService.deleteFile(key)
+//        }
 
         val updatedProfile = existingProfile.copy(
-            profilePhotoKey = newPhotoFileName
+            profilePhotoKey = profilePhoto.name
         )
 
         userProfileRepository.save(updatedProfile)
@@ -118,13 +100,31 @@ class UserProfileService(
         userId: UUID
     ) {
         val existingProfile = getUserProfile(userId)
+        val updatedProfile = existingProfile.copy(
+            profilePhotoKey = null
+        )
+        userProfileRepository.save(updatedProfile)
+    }
 
-        existingProfile.profilePhotoKey?.let { key ->
-            storageService.deleteFile(key)
-        }
+    fun updateUsername(
+        userId: UUID,
+        usernameDto: UsernameDto
+    ) {
+        val existingProfile = getUserProfile(userId)
+        val updatedProfile = existingProfile.copy(
+            username = usernameDto.username
+        )
+        userProfileRepository.save(updatedProfile)
+    }
 
-        val updatedProfile = existingProfile.copy(profilePhotoKey = null)
-
+    fun updateDisplayName(
+        userId: UUID,
+        displayNameDto: DisplayNameDto
+    ) {
+        val existingProfile = getUserProfile(userId)
+        val updatedProfile = existingProfile.copy(
+            displayName = displayNameDto.name
+        )
         userProfileRepository.save(updatedProfile)
     }
 

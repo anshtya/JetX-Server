@@ -36,31 +36,21 @@ class UserProfileController(
         request: HttpServletRequest,
         @Valid @RequestPart("data") createProfileDto: CreateProfileDto,
         @RequestPart("photo") profilePhoto: MultipartFile?
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<UserProfileDto> {
         val userId = jwtUtil.getUserIdFromRequest(request)
-        userProfileService.createUserProfile(userId, createProfileDto, profilePhoto)
-        return ResponseEntity.noContent().build()
+        val userProfile = userProfileService.createUserProfile(userId, createProfileDto, profilePhoto)
+        return ResponseEntity.ok(userProfile)
     }
 
     @PostMapping("/check_username")
     fun checkUsername(
-        @Valid @RequestBody checkUsernameDto: CheckUsernameDto
+        @Valid @RequestBody usernameDto: UsernameDto
     ): ResponseEntity<CheckUsernameResponseDto> {
-        val response = userProfileService.checkUsername(checkUsernameDto)
+        val response = userProfileService.checkUsername(usernameDto)
         return ResponseEntity.ok(response)
     }
 
-    @PatchMapping("/update")
-    fun updateUserProfile(
-        request: HttpServletRequest,
-        @Valid @RequestBody updateProfileDto: UpdateProfileDto
-    ): ResponseEntity<Unit> {
-        val userId = jwtUtil.getUserIdFromRequest(request)
-        userProfileService.updateUserProfile(userId, updateProfileDto)
-        return ResponseEntity.noContent().build()
-    }
-
-    @PutMapping("/photo/update")
+    @PatchMapping("/photo/update")
     fun updateProfilePhoto(
         request: HttpServletRequest,
         @RequestPart("profilePhoto") profilePhoto: MultipartFile
@@ -70,12 +60,32 @@ class UserProfileController(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/photo/remove")
+    @PatchMapping("/photo/remove")
     fun removeProfilePhoto(
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ResponseEntity<Unit> {
         val userId = jwtUtil.getUserIdFromRequest(request)
         userProfileService.removeProfilePhoto(userId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/name/update")
+    fun updateDisplayName(
+        request: HttpServletRequest,
+        @Valid @RequestBody displayNameDto: DisplayNameDto
+    ): ResponseEntity<Unit> {
+        val userId = jwtUtil.getUserIdFromRequest(request)
+        userProfileService.updateDisplayName(userId, displayNameDto)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/username/update")
+    fun updateUsername(
+        request: HttpServletRequest,
+        @Valid @RequestBody usernameDto: UsernameDto
+    ): ResponseEntity<Unit> {
+        val userId = jwtUtil.getUserIdFromRequest(request)
+        userProfileService.updateUsername(userId, usernameDto)
         return ResponseEntity.noContent().build()
     }
 
