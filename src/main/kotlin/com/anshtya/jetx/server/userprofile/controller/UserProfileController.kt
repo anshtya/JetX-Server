@@ -89,7 +89,7 @@ class UserProfileController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/fcm-token")
+    @PatchMapping("/fcm/update")
     fun updateFcmToken(
         request: HttpServletRequest,
         @RequestBody tokenRequest: FcmTokenRequestDto,

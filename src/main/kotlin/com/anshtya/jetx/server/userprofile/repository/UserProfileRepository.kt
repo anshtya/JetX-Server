@@ -23,5 +23,5 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
 
     @Modifying
     @Query("UPDATE UserProfile u SET u.fcmToken = :token WHERE u.user.id = :userId")
-    fun updateFcmToken(userId: UUID, token: String)
+    fun updateFcmToken(userId: UUID, token: String?)
 }

@@ -66,6 +66,7 @@ class AuthService(
         val userId = jwtUtil.getUserIdFromToken(logOutDto.token)
         refreshTokenRepository.deleteByUserId(userId)
         userProfileService.updatePresence(userId, false)
+        userProfileRepository.updateFcmToken(userId, null)
     }
 
     private fun generateAuthResponse(authUser: AuthUser): AuthResultDto {
