@@ -1,13 +1,13 @@
 package com.anshtya.jetx.server.userprofile.controller
 
 import com.anshtya.jetx.server.security.JwtUtil
+import com.anshtya.jetx.server.storage.dto.FileUrlDto
 import com.anshtya.jetx.server.userprofile.dto.*
 import com.anshtya.jetx.server.userprofile.service.UserProfileService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/user")
@@ -34,11 +34,10 @@ class UserProfileController(
     @PostMapping("/create")
     fun createUserProfile(
         request: HttpServletRequest,
-        @Valid @RequestPart("data") createProfileDto: CreateProfileDto,
-        @RequestPart("photo") profilePhoto: MultipartFile?
+        @Valid @RequestBody createProfileDto: CreateProfileDto,
     ): ResponseEntity<UserProfileDto> {
         val userId = jwtUtil.getUserIdFromRequest(request)
-        val userProfile = userProfileService.createUserProfile(userId, createProfileDto, profilePhoto)
+        val userProfile = userProfileService.createUserProfile(userId, createProfileDto)
         return ResponseEntity.ok(userProfile)
     }
 
@@ -50,14 +49,23 @@ class UserProfileController(
         return ResponseEntity.ok(response)
     }
 
-    @PatchMapping("/photo/update")
-    fun updateProfilePhoto(
-        request: HttpServletRequest,
-        @RequestPart("profilePhoto") profilePhoto: MultipartFile
-    ): ResponseEntity<Unit> {
+    @GetMapping("/photo/download")
+    fun getDownloadProfilePhotoUrl(
+        request: HttpServletRequest
+    ): ResponseEntity<FileUrlDto> {
         val userId = jwtUtil.getUserIdFromRequest(request)
-        userProfileService.updateProfilePhoto(userId, profilePhoto)
-        return ResponseEntity.noContent().build()
+        val fileUrl = userProfileService.getDownloadProfilePhotoUrl(userId)
+        return ResponseEntity.ok(fileUrl)
+    }
+
+    @GetMapping("/photo/upload")
+    fun getUploadProfilePhotoUrl(
+        request: HttpServletRequest,
+        @RequestParam("contentType") contentType: String
+    ): ResponseEntity<FileUrlDto> {
+        val userId = jwtUtil.getUserIdFromRequest(request)
+        val fileUrl = userProfileService.getUploadProfilePhotoUrl(userId, contentType)
+        return ResponseEntity.ok(fileUrl)
     }
 
     @PatchMapping("/photo/remove")

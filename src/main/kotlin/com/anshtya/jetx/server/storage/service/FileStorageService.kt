@@ -1,44 +1,45 @@
 package com.anshtya.jetx.server.storage.service
 
 import com.anshtya.jetx.server.storage.config.B2Properties
-import com.anshtya.jetx.server.storage.dto.GetFileDto
+import com.anshtya.jetx.server.storage.dto.FileUrlDto
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.time.Duration
 
 @Service
 class FileStorageService(
     private val s3Client: S3Client,
-    private val preSigner: S3Presigner,
+    private val s3Presigner: S3Presigner,
     private val b2Properties: B2Properties
 ) {
-    fun uploadFile(
-        file: MultipartFile
-    ): String? {
+    fun generateUploadUrl(
+        name: String,
+        contentType: String
+    ): FileUrlDto {
         val putObjectRequest = PutObjectRequest.builder()
             .bucket(b2Properties.bucketName)
-            .key(file.originalFilename)
-            .contentType(file.contentType)
-            .contentLength(file.size)
+            .key(name)
+            .contentType(contentType)
             .build()
 
-        s3Client.putObject(
-            putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size)
-        )
+        val preSignRequest = PutObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofHours(1))
+            .putObjectRequest(putObjectRequest)
+            .build()
 
-        return file.originalFilename!!
+        val presignedPutObjectRequest = s3Presigner.presignPutObject(preSignRequest)
+        return FileUrlDto(presignedPutObjectRequest.url().toString())
     }
 
-    fun getFileDownloadUrl(
+    fun generateDownloadUrl(
         fileName: String
-    ): GetFileDto {
+    ): FileUrlDto {
         val getObjectRequest = GetObjectRequest.builder()
             .bucket(b2Properties.bucketName)
             .key(fileName)
@@ -49,10 +50,8 @@ class FileStorageService(
             .getObjectRequest(getObjectRequest)
             .build()
 
-        val presignedRequest = preSigner.presignGetObject(presignRequest)
-        return GetFileDto(
-            url = presignedRequest.url().toString()
-        )
+        val presignedRequest = s3Presigner.presignGetObject(presignRequest)
+        return FileUrlDto(presignedRequest.url().toString())
     }
 
     fun deleteFile(
@@ -64,5 +63,29 @@ class FileStorageService(
             .build()
 
         s3Client.deleteObject(deleteRequest)
+    }
+
+    fun deleteUserProfilePhoto(
+        fileName: String
+    ) {
+        deleteFile("profile/$fileName")
+    }
+
+    fun generateDownloadUserProfilePhotoUrl(
+        name: String
+    ): FileUrlDto {
+        return generateDownloadUrl(
+            fileName = "profile/$name"
+        )
+    }
+
+    fun generateUploadUserProfilePhotoUrl(
+        name: String,
+        contentType: String
+    ): FileUrlDto {
+        return generateUploadUrl(
+            name = "profile/$name",
+            contentType = contentType
+        )
     }
 }

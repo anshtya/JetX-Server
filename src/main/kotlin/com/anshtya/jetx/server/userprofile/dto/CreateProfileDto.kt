@@ -12,5 +12,6 @@ data class CreateProfileDto(
     @field:Pattern(regexp = USERNAME_REGEX, message = "Username can only contain letters, numbers, and underscores")
     val username: String,
 
-    val fcmToken: String
+    val fcmToken: String,
+    val photoExists: Boolean
 )

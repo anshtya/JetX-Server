@@ -2,7 +2,6 @@ package com.anshtya.jetx.server.storage.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Lazy
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -13,7 +12,6 @@ import java.net.URI
 @Configuration
 class StorageConfig(private val b2Properties: B2Properties) {
     @Bean
-    @Lazy
     fun s3Client(): S3Client {
         val credentials = AwsBasicCredentials.create(
             b2Properties.accessKey,

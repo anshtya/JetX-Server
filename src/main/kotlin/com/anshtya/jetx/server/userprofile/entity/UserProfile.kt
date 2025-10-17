@@ -24,10 +24,7 @@ data class UserProfile(
     var displayName: String,
 
     @Column
-    var profilePhotoUrl: String? = null,  // TODO: generate url
-
-    @Column
-    var profilePhotoKey: String? = null,
+    var photoExists: Boolean = false,
 
     @Column
     var fcmToken: String? = null,

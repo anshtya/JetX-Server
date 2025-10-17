@@ -2,13 +2,13 @@ package com.anshtya.jetx.server.userprofile.service
 
 import com.anshtya.jetx.server.auth.repository.AuthUserRepository
 import com.anshtya.jetx.server.exception.NotFoundException
+import com.anshtya.jetx.server.storage.dto.FileUrlDto
 import com.anshtya.jetx.server.storage.service.FileStorageService
 import com.anshtya.jetx.server.userprofile.dto.*
 import com.anshtya.jetx.server.userprofile.entity.UserProfile
 import com.anshtya.jetx.server.userprofile.repository.UserProfileRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 import java.util.*
 
@@ -37,24 +37,17 @@ class UserProfileService(
 
     fun createUserProfile(
         userId: UUID,
-        createProfileDto: CreateProfileDto,
-        profilePhoto: MultipartFile?
+        createProfileDto: CreateProfileDto
     ): UserProfileDto {
         val user = authUserRepository.findById(userId).orElseThrow {
             IllegalStateException("User doesn't exist")
         }
 
-        // TODO: implement profile storage
-//        var profilePhotoFileName: String? = null
-//        if (profilePhoto != null && !profilePhoto.isEmpty) {
-//            profilePhotoFileName = uploadProfilePhoto(profilePhoto, createProfileDto.username)
-//        }
-
         val userProfile = UserProfile(
             username = createProfileDto.username,
             user = user,
             displayName = createProfileDto.displayName,
-            profilePhotoKey = null,
+            photoExists = createProfileDto.photoExists,
             fcmToken = createProfileDto.fcmToken
         )
         userProfileRepository.save(userProfile)
@@ -79,31 +72,35 @@ class UserProfileService(
         }
     }
 
-    fun updateProfilePhoto(
+    fun getDownloadProfilePhotoUrl(
+        userId: UUID
+    ): FileUrlDto {
+        getUserProfile(userId)
+
+        return storageService.generateDownloadUserProfilePhotoUrl(userId.toString())
+    }
+
+    fun getUploadProfilePhotoUrl(
         userId: UUID,
-        profilePhoto: MultipartFile
-    ) {
-        val existingProfile = getUserProfile(userId)
+        contentType: String
+    ): FileUrlDto {
+        val userProfile = getUserProfile(userId)
 
-//        existingProfile.profilePhotoKey?.let { key ->
-//            storageService.deleteFile(key)
-//        }
-
-        val updatedProfile = existingProfile.copy(
-            profilePhotoKey = profilePhoto.name
+        storageService.deleteUserProfilePhoto(userId.toString())
+        val fileUrlDto = storageService.generateUploadUserProfilePhotoUrl(
+            name = userId.toString(),
+            contentType = contentType
         )
-
-        userProfileRepository.save(updatedProfile)
+        userProfileRepository.save(userProfile.copy(photoExists = true))
+        return fileUrlDto
     }
 
     fun removeProfilePhoto(
         userId: UUID
     ) {
         val existingProfile = getUserProfile(userId)
-        val updatedProfile = existingProfile.copy(
-            profilePhotoKey = null
-        )
-        userProfileRepository.save(updatedProfile)
+        storageService.deleteUserProfilePhoto(userId.toString())
+        userProfileRepository.save(existingProfile.copy(photoExists = false))
     }
 
     fun updateUsername(
@@ -152,13 +149,5 @@ class UserProfileService(
     private fun getUserProfile(id: UUID): UserProfile {
         return userProfileRepository.findByUserId(id)
             ?: throw IllegalStateException("User profile doesn't exist")
-    }
-
-    private fun uploadProfilePhoto(
-        profilePhoto: MultipartFile,
-        username: String
-    ): String {
-        val fileName = storageService.uploadFile(profilePhoto)
-        return "${username}-${fileName}"
     }
 }

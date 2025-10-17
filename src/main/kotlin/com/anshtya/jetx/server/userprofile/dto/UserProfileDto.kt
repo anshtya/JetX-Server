@@ -7,7 +7,7 @@ data class UserProfileDto(
     val username: String,
     val displayName: String,
     val phoneNumber: String?,
-    val profilePhotoUrl: String?,
+    val photoExists: Boolean,
     val isOnline: Boolean,
     val lastSeen: LocalDateTime?
 )
@@ -19,7 +19,7 @@ fun UserProfile.toDto(
         username = username,
         displayName = displayName,
         phoneNumber = phoneNumber,
-        profilePhotoUrl = profilePhotoUrl,
+        photoExists = photoExists,
         isOnline = isOnline,
         lastSeen = lastSeen
     )
