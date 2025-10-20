@@ -9,8 +9,9 @@ import com.anshtya.jetx.server.userprofile.entity.UserProfile
 import com.anshtya.jetx.server.userprofile.repository.UserProfileRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
 
 @Service
 @Transactional
@@ -31,8 +32,9 @@ class UserProfileService(
         val phoneNumber = authUserRepository.findById(userId).orElseThrow {
             IllegalStateException("User doesn't exist")
         }.phoneNumber
-        return userProfileRepository.findByUserId(userId)?.toDto(phoneNumber)
-            ?: throw NotFoundException("User not found")
+        return userProfileRepository.findById(userId).getOrElse {
+            throw NotFoundException("User not found")
+        }.toDto(phoneNumber)
     }
 
     fun createUserProfile(
@@ -52,13 +54,13 @@ class UserProfileService(
         )
         userProfileRepository.save(userProfile)
 
-        return userProfileRepository.findByUserId(userId)!!.toDto(user.phoneNumber)
+        return userProfile.toDto(user.phoneNumber)
     }
 
     fun checkUsername(
         usernameDto: UsernameDto
     ): CheckUsernameResponseDto {
-        val userProfileExists = userProfileRepository.findByUsername(usernameDto.username) != null
+        val userProfileExists = userProfileRepository.existsByUsername(usernameDto.username)
         return if (userProfileExists) {
             CheckUsernameResponseDto(
                 valid = false,
@@ -142,7 +144,7 @@ class UserProfileService(
     }
 
     fun updatePresence(userId: UUID, isOnline: Boolean) {
-        val now = LocalDateTime.now()
+        val now = Instant.now()
         userProfileRepository.updateUserPresence(userId, isOnline, now)
     }
 

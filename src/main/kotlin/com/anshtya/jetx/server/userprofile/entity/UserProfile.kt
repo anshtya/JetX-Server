@@ -4,17 +4,18 @@ import com.anshtya.jetx.server.auth.entity.AuthUser
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.LocalDateTime
+import java.time.Instant
+import java.util.*
 
 @Entity
 @Table(name = "user_profile")
 data class UserProfile(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int = 0,
+    val id: UUID? = null,
 
+    @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "id", nullable = false)
     val user: AuthUser,
 
     @Column(unique = true, nullable = false)
@@ -23,23 +24,26 @@ data class UserProfile(
     @Column(nullable = false)
     var displayName: String,
 
-    @Column
+    @Column(nullable = false)
     var photoExists: Boolean = false,
 
     @Column
     var fcmToken: String? = null,
 
     @Column
-    var lastSeen: LocalDateTime? = null,
+    var lastSeen: Instant? = null,
 
     @Column
     var isOnline: Boolean = false,
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column(
+        nullable = false,
+        updatable = false
+    )
+    val createdAt: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now()
+    val updatedAt: Instant = Instant.now(),
 )

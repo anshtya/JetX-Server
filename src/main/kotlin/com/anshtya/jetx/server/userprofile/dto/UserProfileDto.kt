@@ -1,7 +1,7 @@
 package com.anshtya.jetx.server.userprofile.dto
 
 import com.anshtya.jetx.server.userprofile.entity.UserProfile
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class UserProfileDto(
     val username: String,
@@ -9,7 +9,7 @@ data class UserProfileDto(
     val phoneNumber: String?,
     val photoExists: Boolean,
     val isOnline: Boolean,
-    val lastSeen: LocalDateTime?
+    val lastSeen: Instant?
 )
 
 fun UserProfile.toDto(

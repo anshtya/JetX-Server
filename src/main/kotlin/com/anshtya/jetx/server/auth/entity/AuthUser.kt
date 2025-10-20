@@ -5,7 +5,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.*
 
 @Entity
@@ -15,19 +15,25 @@ class AuthUser(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @Column(unique = true, nullable = false)
+    @Column(
+        unique = true,
+        nullable = false
+    )
     val phoneNumber: String,
 
     @Column(nullable = false)
     val pinHash: String,
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column(
+        nullable = false,
+        updatable = false
+    )
+    val createdAt: Instant = Instant.now(),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now()
+    val updatedAt: Instant = Instant.now()
 ) : UserDetails {
     override fun getAuthorities(): Collection<GrantedAuthority?> {
         return listOf()

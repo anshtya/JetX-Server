@@ -2,7 +2,7 @@ package com.anshtya.jetx.server.auth.entity
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -20,5 +20,5 @@ data class RefreshToken(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: Instant = Instant.now()
 )
