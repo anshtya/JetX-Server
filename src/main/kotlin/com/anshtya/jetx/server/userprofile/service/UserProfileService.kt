@@ -148,8 +148,9 @@ class UserProfileService(
         userProfileRepository.updateUserPresence(userId, isOnline, now)
     }
 
-    private fun getUserProfile(id: UUID): UserProfile {
-        return userProfileRepository.findByUserId(id)
-            ?: throw IllegalStateException("User profile doesn't exist")
+    fun getUserProfile(id: UUID): UserProfile {
+        return userProfileRepository.findById(id).getOrElse {
+            throw IllegalStateException("User profile doesn't exist")
+        }
     }
 }

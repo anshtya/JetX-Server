@@ -1,6 +1,7 @@
 package com.anshtya.jetx.server.userprofile.entity
 
 import com.anshtya.jetx.server.auth.entity.AuthUser
+import com.anshtya.jetx.server.messaging.entity.Group
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -46,4 +47,10 @@ data class UserProfile(
     @UpdateTimestamp
     @Column(nullable = false)
     val updatedAt: Instant = Instant.now(),
+
+    @ManyToMany(
+        mappedBy = "members",
+        fetch = FetchType.LAZY
+    )
+    val groups: MutableSet<Group> = mutableSetOf()
 )

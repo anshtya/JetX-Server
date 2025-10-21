@@ -1,5 +1,6 @@
 package com.anshtya.jetx.server.userprofile.repository
 
+import com.anshtya.jetx.server.messaging.entity.Group
 import com.anshtya.jetx.server.userprofile.entity.UserProfile
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -23,4 +24,7 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
     @Modifying
     @Query("UPDATE UserProfile u SET u.fcmToken = :token WHERE u.id = :id")
     fun updateFcmToken(id: UUID, token: String?)
+
+    @Query("SELECT g FROM Group g JOIN g.members u WHERE u.id = :userId")
+    fun findGroupsByUserProfileId(userId: UUID): List<Group>
 }
