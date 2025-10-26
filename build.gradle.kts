@@ -30,6 +30,8 @@ dependencies {
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0")
 
+    implementation("com.google.firebase:firebase-admin:9.7.0")
+
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("software.amazon.awssdk:s3:2.20.26")

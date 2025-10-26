@@ -27,4 +27,7 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
 
     @Query("SELECT g FROM Group g JOIN g.members u WHERE u.id = :userId")
     fun findGroupsByUserProfileId(userId: UUID): List<Group>
+
+    @Query("SELECT u.fcmToken FROM UserProfile u WHERE u.id = :id")
+    fun getTokenByUserId(id: UUID): String
 }

@@ -1,6 +1,8 @@
 package com.anshtya.jetx.server.messaging.service
 
 import com.anshtya.jetx.server.messaging.dto.CreateGroupDto
+import com.anshtya.jetx.server.messaging.dto.GroupDto
+import com.anshtya.jetx.server.messaging.dto.toDto
 import com.anshtya.jetx.server.messaging.entity.Group
 import com.anshtya.jetx.server.messaging.repository.GroupRepository
 import com.anshtya.jetx.server.userprofile.repository.UserProfileRepository
@@ -17,13 +19,13 @@ class GroupService(
 ) {
     fun createGroup(
         createGroupDto: CreateGroupDto
-    ) {
-        groupRepository.save(
+    ): GroupDto {
+        return groupRepository.save(
             Group(
                 name = createGroupDto.name,
                 description = createGroupDto.description
             )
-        )
+        ).toDto()
     }
 
     fun getUserGroups(userId: UUID): List<Group> {
@@ -34,5 +36,9 @@ class GroupService(
         return groupRepository.findById(id).getOrElse {
             throw IllegalStateException("Group doesn't exist")
         }
+    }
+
+    fun getUserTokens(id: UUID): List<String> {
+        return groupRepository.getMemberTokens(id)
     }
 }

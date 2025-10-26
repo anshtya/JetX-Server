@@ -139,7 +139,7 @@ class UserProfileService(
     }
 
     fun searchUserProfile(query: String): UserProfileSearchDto {
-        val searchResults = userProfileRepository.searchUsers(query).map { it.toDto() }
+        val searchResults = userProfileRepository.searchUsers(query).map { it.toSearchResultDto() }
         return UserProfileSearchDto(searchResults)
     }
 
@@ -152,5 +152,9 @@ class UserProfileService(
         return userProfileRepository.findById(id).getOrElse {
             throw IllegalStateException("User profile doesn't exist")
         }
+    }
+
+    fun getFcmTokenByUserId(id: UUID): String {
+        return userProfileRepository.getTokenByUserId(id)
     }
 }

@@ -22,8 +22,7 @@ import java.util.*
 )
 data class Message(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID? = null,
+    val id: UUID,
 
     @Column(nullable = false, updatable = false)
     val type: MessageType,
@@ -73,12 +72,14 @@ data class Message(
 ) {
     companion object {
         fun createIndividualMessage(
+            id: UUID,
             sender: UserProfile,
             receiver: UserProfile,
             content: String? = null,
             attachment: Attachment? = null
         ): Message {
             return Message(
+                id = id,
                 type = MessageType.INDIVIDUAL,
                 sender = sender,
                 receiver = receiver,
@@ -88,12 +89,14 @@ data class Message(
         }
 
         fun createGroupMessage(
+            id: UUID,
             sender: UserProfile,
             group: Group,
             content: String? = null,
             attachment: Attachment? = null
         ): Message {
             return Message(
+                id = id,
                 type = MessageType.GROUP,
                 sender = sender,
                 group = group,

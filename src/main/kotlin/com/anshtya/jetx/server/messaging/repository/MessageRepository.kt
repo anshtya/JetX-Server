@@ -9,14 +9,14 @@ import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
     @Modifying
-    @Query("UPDATE Message m SET m.content = null, m.isDeleted = TRUE WHERE m.id = :messageId")
-    fun softDeleteMessage(messageId: UUID)
+    @Query("UPDATE Message m SET m.status = :status, m.content = null WHERE m.id in :messageIds")
+    fun updateMessageReceived(messageIds: List<UUID>, status: MessageStatus = MessageStatus.DELIVERED)
 
     @Modifying
-    @Query("UPDATE Message m SET m.content = null WHERE m.id = :messageId")
-    fun softDeleteMessageContent(messageId: UUID)
+    @Query("UPDATE Message m SET m.status = :status WHERE m.id = :id")
+    fun updateMessageReceived(id: UUID, status: MessageStatus = MessageStatus.DELIVERED)
 
     @Modifying
     @Query("UPDATE Message m SET m.status = :status WHERE m.id in :messageIds")
-    fun updateMessageStatus(messageIds: List<UUID>, status: MessageStatus)
+    fun updateMessageSeen(messageIds: List<UUID>, status: MessageStatus = MessageStatus.SEEN)
 }

@@ -1,7 +1,7 @@
 package com.anshtya.jetx.server.messaging.controller
 
 import com.anshtya.jetx.server.messaging.dto.CreateGroupDto
-import com.anshtya.jetx.server.messaging.dto.GetGroupDto
+import com.anshtya.jetx.server.messaging.dto.GroupDto
 import com.anshtya.jetx.server.messaging.entity.Group
 import com.anshtya.jetx.server.messaging.service.GroupService
 import com.anshtya.jetx.server.security.JwtUtil
@@ -18,16 +18,16 @@ class GroupController(
     @PostMapping("/create")
     fun createGroup(
         @RequestBody createGroupDto: CreateGroupDto
-    ): ResponseEntity<Unit> {
-        groupService.createGroup(createGroupDto)
-        return ResponseEntity.noContent().build()
+    ): ResponseEntity<GroupDto> {
+        val group = groupService.createGroup(createGroupDto)
+        return ResponseEntity.ok(group)
     }
 
     @PostMapping("/get")
     fun getGroup(
-        @RequestBody getGroupDto: GetGroupDto
+        @RequestBody groupDto: GroupDto
     ): ResponseEntity<Group> {
-        val group = groupService.getGroup(getGroupDto.id)
+        val group = groupService.getGroup(groupDto.id)
         return ResponseEntity.ok(group)
     }
 

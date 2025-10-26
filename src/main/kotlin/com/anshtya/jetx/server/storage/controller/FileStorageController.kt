@@ -30,7 +30,7 @@ class FileStorageController(
         return ResponseEntity.ok(fileUrlDto)
     }
 
-    @DeleteMapping("/{fileName}/delete")
+    @DeleteMapping("/{fileName}")
     fun deleteFromStorage(
         @PathVariable fileName: String
     ): ResponseEntity<Unit> {

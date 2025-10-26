@@ -1,5 +1,6 @@
 package com.anshtya.jetx.server.websocket
 
+import com.anshtya.jetx.server.websocket.dto.WebSocketMessageDto
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -26,13 +27,28 @@ class WebSocketHandler : TextWebSocketHandler() {
         val payload = message.payload
         val messageMap = objectMapper.readValue(payload, Map::class.java)
         val type = messageMap["type"] as? String ?: return
+        val userId = messageMap["userId"] as UUID
 
         when (type) {
-            "subscribe" -> handleSubscribe(session, messageMap)
-            "unsubscribe" -> handleUnsubscribe(session, messageMap)
+            "subscribe" -> handleSubscribe(session, userId)
+            "unsubscribe" -> handleUnsubscribe(session, userId)
             "hello" -> {
                 session.sendMessage(TextMessage("hello - ${messageMap["message"]}"))
             }
+        }
+    }
+
+    override fun afterConnectionEstablished(
+        session: WebSocketSession
+    ) {
+        val userId = session.uri?.query
+            ?.split("&")
+            ?.find { it.startsWith("userId=") }
+            ?.substringAfter("userId=")
+
+        if (userId != null) {
+            val key = UUID.fromString(userId)
+            userSessions[key] = session
         }
     }
 
@@ -43,16 +59,30 @@ class WebSocketHandler : TextWebSocketHandler() {
         userSessions.entries.removeIf { it.value == session }
     }
 
-    fun sendDbUpdateToUser(userId: UUID, data: Map<String, Any>) {
+    fun sendToUser(
+        userId: UUID,
+        data: WebSocketMessageDto
+    ) {
         val session = userSessions[userId]
+
+        if (session != null && session.isOpen) {
+            session.sendMessage(TextMessage(objectMapper.writeValueAsString(data)))
+        }
+    }
+
+    fun sendToUsers(
+        userIds: List<UUID>,
+        data: WebSocketMessageDto
+    ) {
+        userIds.forEach { id ->
+            sendToUser(id, data)
+        }
     }
 
     private fun handleSubscribe(
         session: WebSocketSession,
-        messageMap: Map<*, *>
+        userId: UUID
     ) {
-        val userId = messageMap["userId"] as UUID
-
         userSessions[userId] = session
 
         session.sendMessage(TextMessage("Successfully subscribed to userId: $userId"))
@@ -60,10 +90,8 @@ class WebSocketHandler : TextWebSocketHandler() {
 
     private fun handleUnsubscribe(
         session: WebSocketSession,
-        messageMap: Map<*, *>
+        userId: UUID
     ) {
-        val userId = messageMap["userId"] as UUID
-
         userSessions.remove(userId)
 
         session.sendMessage(TextMessage("Successfully unsubscribed from userId: $userId"))

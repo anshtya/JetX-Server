@@ -38,3 +38,5 @@ out/
 
 .env
 docker-compose.debug.yml
+
+/src/main/**/resources/firebase-service-account.json
