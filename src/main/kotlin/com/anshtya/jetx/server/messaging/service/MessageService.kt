@@ -4,11 +4,11 @@ import com.anshtya.jetx.server.firebase.service.FirebaseService
 import com.anshtya.jetx.server.messaging.dto.MessageDto
 import com.anshtya.jetx.server.messaging.dto.MessageUpdateDto
 import com.anshtya.jetx.server.messaging.dto.toDto
-import com.anshtya.jetx.server.messaging.dto.toStringMap
 import com.anshtya.jetx.server.messaging.entity.Message
 import com.anshtya.jetx.server.messaging.entity.MessageType
 import com.anshtya.jetx.server.messaging.repository.AttachmentRepository
 import com.anshtya.jetx.server.messaging.repository.MessageRepository
+import com.anshtya.jetx.server.queue.service.MessageQueueService
 import com.anshtya.jetx.server.userprofile.service.UserProfileService
 import com.anshtya.jetx.server.websocket.WebSocketHandler
 import com.anshtya.jetx.server.websocket.dto.MessageStatusUpdate
@@ -26,6 +26,7 @@ class MessageService(
     private val groupService: GroupService,
     private val userProfileService: UserProfileService,
     private val firebaseService: FirebaseService,
+    private val messageQueueService: MessageQueueService,
     private val webSocketHandler: WebSocketHandler
 ) {
     fun getMessage(
@@ -64,17 +65,57 @@ class MessageService(
 
         when (messageDto.type) {
             MessageType.INDIVIDUAL -> {
-                firebaseService.sendDataMessage(
-                    token = userProfileService.getFcmTokenByUserId(savedMessage.targetId),
-                    data = savedMessage.toStringMap()
-                )
+                val receiverId = savedMessage.targetId
+                val userConnected = webSocketHandler.isUserConnected(receiverId)
+                if (userConnected) {
+                    webSocketHandler.sendToUser(
+                        userId = receiverId,
+                        data = WebSocketMessageDto(
+                            type = WebSocketMessageType.NEW_MESSAGE,
+                            data = savedMessage
+                        )
+                    )
+                } else {
+                    messageQueueService.insertIntoQueue(
+                        userId = receiverId,
+                        messageId = savedMessage.id
+                    )
+
+                    if (userProfileService.fcmEnabled(receiverId)) {
+                        firebaseService.sendMessageTrigger(
+                            token = userProfileService.getFcmTokenByUserId(receiverId),
+                        )
+                    }
+                }
             }
 
             MessageType.GROUP -> {
-                firebaseService.sendMulticastDataMessage(
-                    token = groupService.getUserTokens(messageDto.targetId),
-                    data = savedMessage.toStringMap()
-                )
+                val groupMembers = message.group!!.members
+                val (connected, disconnected) = groupMembers.partition {
+                    webSocketHandler.isUserConnected(it.id!!)
+                }
+
+                if (connected.isNotEmpty()) {
+                    webSocketHandler.sendToUsers(
+                        userIds = connected.map { it.id!! },
+                        data = WebSocketMessageDto(
+                            type = WebSocketMessageType.NEW_MESSAGE,
+                            data = savedMessage
+                        )
+                    )
+                }
+
+                if (disconnected.isNotEmpty()) {
+                    messageQueueService.multiInsertIntoQueue(
+                        userIds = disconnected.map { it.id!! },
+                        messageId = savedMessage.id
+                    )
+
+                    val fcmEnabled = disconnected.filter { userProfileService.fcmEnabled(it.id!!) }
+                    firebaseService.sendMulticastMessageTrigger(
+                        token = fcmEnabled.map { it.fcmToken!! }
+                    )
+                }
             }
         }
     }

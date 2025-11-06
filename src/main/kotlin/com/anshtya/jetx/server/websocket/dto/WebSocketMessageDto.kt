@@ -6,5 +6,5 @@ data class WebSocketMessageDto(
 )
 
 enum class WebSocketMessageType {
-    MESSAGE_UPDATE, PROFILE
+    NEW_MESSAGE, MESSAGE_UPDATE, PROFILE
 }

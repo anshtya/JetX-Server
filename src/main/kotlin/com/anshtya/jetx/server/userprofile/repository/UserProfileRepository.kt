@@ -30,4 +30,7 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
 
     @Query("SELECT u.fcmToken FROM UserProfile u WHERE u.id = :id")
     fun getTokenByUserId(id: UUID): String
+
+    @Query("SELECT EXISTS(SELECT u.fcmToken FROM UserProfile u WHERE u.id = :id AND u.fcmToken IS NOT NULL)")
+    fun isFcmEnabled(id: UUID): Boolean
 }

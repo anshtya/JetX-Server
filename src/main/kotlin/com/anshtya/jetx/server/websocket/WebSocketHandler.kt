@@ -59,6 +59,12 @@ class WebSocketHandler : TextWebSocketHandler() {
         userSessions.entries.removeIf { it.value == session }
     }
 
+    fun isUserConnected(
+        userId: UUID
+    ): Boolean {
+        return userSessions.containsKey(userId)
+    }
+
     fun sendToUser(
         userId: UUID,
         data: WebSocketMessageDto

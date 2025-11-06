@@ -157,4 +157,8 @@ class UserProfileService(
     fun getFcmTokenByUserId(id: UUID): String {
         return userProfileRepository.getTokenByUserId(id)
     }
+
+    fun fcmEnabled(id: UUID): Boolean {
+        return userProfileRepository.isFcmEnabled(id)
+    }
 }
