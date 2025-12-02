@@ -37,6 +37,6 @@ out/
 .vscode/
 
 .env
-docker-compose.debug.yml
+docker-compose.yml
 
 /src/main/**/resources/firebase-service-account.json
