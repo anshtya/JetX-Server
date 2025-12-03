@@ -11,4 +11,4 @@ WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 COPY --from=build /app/build/libs/*.jar /app/app.jar
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-Dfirebase.config.path=${FIREBASE_CONFIG_PATH}", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "/app/app.jar"]

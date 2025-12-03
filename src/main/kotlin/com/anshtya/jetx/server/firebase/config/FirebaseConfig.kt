@@ -7,23 +7,24 @@ import com.google.firebase.messaging.FirebaseMessaging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.util.*
+
 
 @Configuration
 class FirebaseConfig {
 
-    @Value($$"${firebase.config.path}")
-    private lateinit var firebaseConfigPath: String
+    @Value($$"${firebase.config.base64}")
+    private lateinit var firebaseConfigBase64: String
 
     @Bean
     fun firebaseMessaging(): FirebaseMessaging {
-        val serviceAccount: InputStream = this::class.java
-            .classLoader
-            .getResourceAsStream(firebaseConfigPath)
-            ?: throw IllegalArgumentException("Firebase config file not found at $firebaseConfigPath")
+        val decodedBytes: ByteArray = Base64.getDecoder().decode(firebaseConfigBase64)
+        val credentialsStream: InputStream = ByteArrayInputStream(decodedBytes)
 
         val options = FirebaseOptions.builder()
-            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+            .setCredentials(GoogleCredentials.fromStream(credentialsStream))
             .build()
 
         if (FirebaseApp.getApps().isEmpty()) {
