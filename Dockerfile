@@ -8,6 +8,7 @@ COPY src/ ./src/
 RUN ./gradlew clean bootJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
+RUN --mount=type=secret,id=firebase-service-account_json,dst=/etc/secrets/firebase-service-account.json
 WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
