@@ -4,7 +4,6 @@ COPY gradle/ ./gradle/
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 RUN ./gradlew dependencies --no-daemon
 COPY src/ ./src/
-COPY /etc/secrets/firebase-service-account.json ./src/main/resources/firebase-service-account.json
 RUN ./gradlew clean bootJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
@@ -12,4 +11,4 @@ WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 COPY --from=build /app/build/libs/*.jar /app/app.jar
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-Dfirebase.config.path=${FIREBASE_CONFIG_PATH}", "-jar", "/app/app.jar"]
