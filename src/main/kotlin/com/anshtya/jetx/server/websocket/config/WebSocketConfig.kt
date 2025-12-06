@@ -13,6 +13,6 @@ class WebSocketConfig(
 ) : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry.addHandler(chatHandler, "/connect")
-            .setAllowedOrigins("http://localhost:8080")
+            .setAllowedOriginPatterns("http://localhost:8080", "https://*.onrender.com")
     }
 }
