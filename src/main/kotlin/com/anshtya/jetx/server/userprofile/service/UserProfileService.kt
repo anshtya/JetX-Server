@@ -40,7 +40,7 @@ class UserProfileService(
     fun createUserProfile(
         userId: UUID,
         createProfileDto: CreateProfileDto
-    ): UserProfileDto {
+    ): CreateProfileResponseDto {
         val user = authUserRepository.findById(userId).orElseThrow {
             IllegalStateException("User doesn't exist")
         }
@@ -54,7 +54,7 @@ class UserProfileService(
         )
         userProfileRepository.save(userProfile)
 
-        return userProfile.toDto(user.phoneNumber)
+        return userProfile.toCreateResponseDto(phoneNumber = user.phoneNumber)
     }
 
     fun checkUsername(
@@ -86,23 +86,25 @@ class UserProfileService(
         userId: UUID,
         contentType: String
     ): FileUrlDto {
-        val userProfile = getUserProfile(userId)
+        authUserRepository.findById(userId).orElseThrow {
+            IllegalStateException("User doesn't exist")
+        }
 
-        storageService.deleteUserProfilePhoto(userId.toString())
         val fileUrlDto = storageService.generateUploadUserProfilePhotoUrl(
             name = userId.toString(),
             contentType = contentType
         )
-        userProfileRepository.save(userProfile.copy(photoExists = true))
+        if (userProfileRepository.findById(userId).isPresent) {
+            userProfileRepository.updatePhotoExists(userId, true)
+        }
         return fileUrlDto
     }
 
     fun removeProfilePhoto(
         userId: UUID
     ) {
-        val existingProfile = getUserProfile(userId)
         storageService.deleteUserProfilePhoto(userId.toString())
-        userProfileRepository.save(existingProfile.copy(photoExists = false))
+        userProfileRepository.updatePhotoExists(userId, false)
     }
 
     fun updateUsername(

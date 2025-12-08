@@ -25,6 +25,10 @@ interface UserProfileRepository : JpaRepository<UserProfile, UUID> {
     @Query("UPDATE UserProfile u SET u.fcmToken = :token WHERE u.id = :id")
     fun updateFcmToken(id: UUID, token: String?)
 
+    @Modifying
+    @Query("UPDATE UserProfile u SET u.photoExists = :value WHERE u.id = :id")
+    fun updatePhotoExists(id: UUID, value: Boolean)
+
     @Query("SELECT g FROM Group g JOIN g.members u WHERE u.id = :userId")
     fun findGroupsByUserProfileId(userId: UUID): List<Group>
 

@@ -35,7 +35,7 @@ class UserProfileController(
     fun createUserProfile(
         request: HttpServletRequest,
         @Valid @RequestBody createProfileDto: CreateProfileDto,
-    ): ResponseEntity<UserProfileDto> {
+    ): ResponseEntity<CreateProfileResponseDto> {
         val userId = jwtUtil.getUserIdFromRequest(request)
         val userProfile = userProfileService.createUserProfile(userId, createProfileDto)
         return ResponseEntity.ok(userProfile)
