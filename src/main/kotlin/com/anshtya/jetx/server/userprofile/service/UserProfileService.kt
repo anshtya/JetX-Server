@@ -90,11 +90,19 @@ class UserProfileService(
             IllegalStateException("User doesn't exist")
         }
 
+        val userProfile = userProfileRepository.findById(userId)
+        val photoExists = if (userProfile.isPresent) {
+            userProfile.get().photoExists
+        } else {
+            false
+        }
+
         val fileUrlDto = storageService.generateUploadUserProfilePhotoUrl(
             name = userId.toString(),
-            contentType = contentType
+            contentType = contentType,
+            photoExists = photoExists
         )
-        if (userProfileRepository.findById(userId).isPresent) {
+        if (userProfile.isPresent && !photoExists){
             userProfileRepository.updatePhotoExists(userId, true)
         }
         return fileUrlDto

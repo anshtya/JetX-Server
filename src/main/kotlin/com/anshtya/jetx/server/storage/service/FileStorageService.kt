@@ -81,11 +81,16 @@ class FileStorageService(
 
     fun generateUploadUserProfilePhotoUrl(
         name: String,
-        contentType: String
+        contentType: String,
+        photoExists: Boolean
     ): FileUrlDto {
-        return generateUploadUrl(
+        val url = generateUploadUrl(
             name = "profile/$name",
             contentType = contentType
         )
+        if (photoExists) {
+            deleteUserProfilePhoto(name)
+        }
+        return url
     }
 }
