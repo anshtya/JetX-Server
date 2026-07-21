@@ -20,6 +20,7 @@ class WebSecurityConfig(
                 auth
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/connect").permitAll()
+                    .requestMatchers("/hello").permitAll()
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
